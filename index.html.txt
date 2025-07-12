@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card Template Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style id="main-styles">
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .font-marvel {
+            font-family: 'Bangers', cursive;
+            letter-spacing: 0.05em;
+        }
+
+        /* --- EXPLICIT THEME RULES FOR RELIABILITY --- */
+        body {
+            background-color: #ffffff; /* white */
+            color: #1f2937; /* gray-800 */
+        }
+        html.dark body {
+            background-color: #111827; /* gray-900 */
+            color: #d1d5db; /* gray-300 */
+        }
+        .instructions-panel {
+             background-color: #f3f4f6; /* gray-100 */
+        }
+        html.dark .instructions-panel {
+            background-color: #1f2937; /* gray-800 */
+        }
+        .instructions-text, .instructions-title {
+            color: #1f2937; /* gray-800 */
+        }
+        html.dark .instructions-text, html.dark .instructions-title {
+             color: #d1d5db; /* gray-300 */
+        }
+        .page-container {
+            background-color: #f3f4f6; /* gray-100 */
+        }
+        html.dark .page-container {
+             background-color: #1f2937; /* gray-800 */
+        }
+        .card-slot {
+            background-color: #ffffff;
+        }
+        html.dark .card-slot {
+            background-color: #374151; /* gray-700 */
+        }
+        .card-title {
+            color: #111827; /* gray-900 */
+        }
+        html.dark .card-title {
+            color: #f9fafb; /* gray-50 */
+        }
+        .select-input {
+            background-color: #ffffff;
+            border-color: #d1d5db; /* gray-300 */
+        }
+        html.dark .select-input {
+            background-color: #4b5563; /* gray-600 */
+            border-color: #4b5563; /* gray-600 */
+            color: #f9fafb;
+        }
+
+        #print-area { display: none; }
+        .card {
+            width: 2.5in;
+            height: 3.5in;
+            box-sizing: border-box;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border: 1px dashed #9ca3af;
+        }
+        .page {
+            width: 8.5in;
+            height: 11in;
+            padding: 0.5in;
+            box-sizing: border-box;
+            background: white !important; /* Ensure print page is always white */
+            display: grid;
+            grid-template-columns: repeat(3, 2.5in);
+            grid-template-rows: repeat(3, 3.5in);
+            gap: 0;
+            page-break-after: always;
+        }
+        #page-previews {
+            transform-origin: top center;
+            transform: scale(0.4); 
+            margin-bottom: -35rem; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .preview-container {
+            position: relative;
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 5rem;
+        }
+        .preview-page { box-shadow: 0 0 15px rgba(0,0,0,0.2); }
+        .page-title {
+            position: absolute;
+            top: -4rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2.5rem;
+            width: 100%;
+            text-align: center;
+        }
+        .image-upload-label {
+            cursor: pointer;
+            display: block;
+            position: relative;
+        }
+
+        @media print {
+            body > .no-print { display: none; }
+            #print-area { display: block; }
+            .page {
+                margin: 0;
+                padding: 0.5in;
+                box-shadow: none;
+                border: none;
+                page-break-after: always;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container mx-auto p-8 no-print">
+
+        <div class="absolute top-4 right-4">
+            <button id="theme-toggle" type="button" class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5">
+                <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 5.05A1 1 0 003.636 6.464l.707.707a1 1 0 001.414-1.414l-.707-.707zM3 11a1 1 0 100-2H2a1 1 0 100 2h1zM6.464 16.364l-.707.707a1 1 0 001.414 1.414l.707-.707a1 1 0 00-1.414-1.414z"></path></svg>
+            </button>
+        </div>
+
+        <h1 class="font-marvel text-5xl md:text-7xl font-bold mb-4 text-center text-red-600">Card Generator</h1>
+        <p class="text-center mb-8 text-gray-600 dark:text-gray-400">Create printable, double-sided cards for your favorite games.</p>
+
+        <div class="instructions-panel p-6 rounded-lg shadow-md mb-8">
+            <div id="instructions-toggle" class="flex justify-between items-center cursor-pointer">
+                <h2 class="instructions-title font-marvel text-3xl text-red-600">Instructions</h2>
+                <svg id="instructions-arrow" class="w-6 h-6 transition-transform duration-300 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </div>
+            <div id="instructions-list" class="overflow-hidden max-h-0 transition-all duration-500 ease-in-out">
+                <ol class="instructions-text list-decimal list-inside space-y-2 pt-4">
+                    <li>Click a placeholder to upload a front image. Use **Set All Fronts** for multiple images at once.</li>
+                    <li>For card backs, use the dropdown in each slot. Select "Custom" and click the placeholder to upload a unique back.</li>
+                    <li>Use the **Set All Backs** button and its dropdown to apply a standard or custom back to all cards.</li>
+                    <li>Delete images or pages using the trash can icons.</li>
+                    <li>When ready, click "Print". In your printer settings, choose "Print on both sides" and "Flip on long edge".</li>
+                </ol>
+            </div>
+        </div>
+
+        <div id="card-slots" class="space-y-8"></div>
+
+        <div class="flex flex-wrap justify-center items-center gap-4 my-8">
+            <button id="set-all-fronts-btn" class="font-marvel text-xl cursor-pointer bg-green-500 hover:bg-green-600 text-white font-bold h-12 px-6 rounded-lg shadow-md transition-colors flex items-center justify-center">Set All Fronts</button>
+            <input type="file" id="bulk-front-upload" data-type="front" multiple accept="image/*" class="hidden">
+
+            <div class="flex items-center gap-2">
+                <button id="set-all-backs-btn" class="font-marvel text-xl bg-green-500 hover:bg-green-600 text-white font-bold h-12 px-6 rounded-lg shadow-md transition-colors flex items-center justify-center">Set All Backs</button>
+                <select id="set-all-backs-select" class="select-input rounded-md h-12 px-3 focus:ring-blue-500 focus:border-blue-500 border">
+                    <option value="custom">Custom</option>
+                    <option value="encounter">Encounter</option>
+                    <option value="player">Player</option>
+                    <option value="villain">Villain</option>
+                </select>
+            </div>
+            <input type="file" id="bulk-back-upload" data-type="back" multiple accept="image/*" class="hidden">
+
+            <button id="add-page-btn" class="font-marvel text-xl bg-blue-500 hover:bg-blue-600 text-white font-bold h-12 px-6 rounded-lg shadow-md transition-colors flex items-center justify-center">Add Page</button>
+
+            <button id="print-btn" class="font-marvel text-xl bg-red-600 hover:bg-red-700 text-white font-bold h-12 px-6 rounded-lg shadow-lg transition-transform transform hover:scale-105 flex items-center justify-center">Print</button>
+        </div>
+    </div>
+
+    <div id="page-previews" class="no-print container mx-auto"></div>
+    <div id="print-area"></div>
+
+    <script>
+        const cardSlotsContainer = document.getElementById('card-slots');
+        const addPageBtn = document.getElementById('add-page-btn');
+        const printArea = document.getElementById('print-area');
+        const previewArea = document.getElementById('page-previews');
+        const setAllFrontsBtn = document.getElementById('set-all-fronts-btn');
+        const bulkFrontInput = document.getElementById('bulk-front-upload');
+        const setAllBacksBtn = document.getElementById('set-all-backs-btn');
+        const setAllBacksSelect = document.getElementById('set-all-backs-select');
+        const bulkBackInput = document.getElementById('bulk-back-upload');
+        const printBtn = document.getElementById('print-btn');
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+        const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+        const instructionsToggle = document.getElementById('instructions-toggle');
+        const instructionsList = document.getElementById('instructions-list');
+        const instructionsArrow = document.getElementById('instructions-arrow');
+
+        let cards = [];
+
+        const PRESET_BACKS = {
+            encounter: 'https://i.imgur.com/rN8rQ9J.jpeg',
+            player: 'https://i.imgur.com/hLBMoLx.jpeg',
+            villain: 'https://i.imgur.com/YnqHn29.jpeg'
+        };
+
+        // --- Core UI Rendering ---
+
+        function renderAll() {
+            cardSlotsContainer.innerHTML = '';
+            if (cards.length === 0) {
+                for (let i = 0; i < 9; i++) {
+                    cards.push({ front: null, back: null, backType: 'custom' });
+                }
+            }
+            const pageCount = Math.ceil(cards.length / 9);
+
+            for (let p = 0; p < pageCount; p++) {
+                const pageContainer = document.createElement('div');
+                pageContainer.className = 'page-container p-4 rounded-lg';
+
+                const titleContainer = document.createElement('div');
+                titleContainer.className = 'flex justify-center items-center mb-4';
+
+                const title = document.createElement('h2');
+                title.className = 'font-marvel text-4xl text-center text-red-600';
+                title.textContent = `Page ${p + 1}`;
+                titleContainer.appendChild(title);
+
+                if (pageCount > 1) {
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'delete-page-btn ml-4 text-red-500 hover:text-red-700';
+                    deleteBtn.dataset.pageIndex = p;
+                    deleteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>`;
+                    titleContainer.appendChild(deleteBtn);
+                }
+                pageContainer.appendChild(titleContainer);
+
+                const gridContainer = document.createElement('div');
+                gridContainer.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6';
+
+                for (let i = 0; i < 9; i++) {
+                    const cardIndex = p * 9 + i;
+                    if (cardIndex < cards.length) {
+                         const slotElement = createCardSlot(cardIndex);
+                         gridContainer.appendChild(slotElement);
+                    }
+                }
+
+                pageContainer.appendChild(gridContainer);
+                cardSlotsContainer.appendChild(pageContainer);
+            }
+            generatePrintAndPreviewPages();
+        }
+
+        function createCardSlot(index) {
+            const cardData = cards[index];
+            const slot = document.createElement('div');
+            slot.className = 'card-slot p-4 rounded-lg shadow-md';
+
+            const placeholder = 'https://placehold.co/250x350/e9e9e9/333333?text=';
+            const darkPlaceholder = 'https://placehold.co/250x350/374151/d1d5db?text=';
+            const isDarkMode = document.documentElement.classList.contains('dark');
+
+            const frontSrc = cardData.front || (isDarkMode ? `${darkPlaceholder}Click+to+Upload` : `${placeholder}Click+to+Upload`);
+            let backSrc = isDarkMode ? `${darkPlaceholder}Click+to+Upload` : `${placeholder}Click+to+Upload`;
+
+            if (cardData.backType !== 'custom') {
+                backSrc = PRESET_BACKS[cardData.backType];
+            } else if (cardData.back) {
+                backSrc = cardData.back;
+            }
+
+            const backHasImage = cardData.back || cardData.backType !== 'custom';
+
+            slot.innerHTML = `
+                <h3 class="card-title font-bold text-lg mb-2">Card ${index + 1}</h3>
+                <div class="flex justify-around items-start space-x-4">
+                    <!-- Front Column -->
+                    <div class="flex flex-col items-center space-y-2">
+                        <div class="relative">
+                            <label for="front-upload-${index}" class="image-upload-label">
+                                <img id="front-preview-${index}" class="w-24 h-32 object-cover bg-gray-200 dark:bg-gray-600 rounded border border-gray-300 dark:border-gray-500" src="${frontSrc}" alt="Front of card ${index + 1}">
+                            </label>
+                            <button class="delete-image-btn ${cardData.front ? '' : 'hidden'} absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 transform translate-x-1/2 -translate-y-1/2 hover:bg-red-700" data-index="${index}" data-type="front">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            </button>
+                        </div>
+                        <input type="file" id="front-upload-${index}" data-index="${index}" data-type="front" accept="image/*" class="hidden">
+                    </div>
+                    <!-- Back Column -->
+                    <div class="flex flex-col items-center space-y-2">
+                         <div class="relative">
+                            <label for="back-upload-${index}" class="image-upload-label ${cardData.backType === 'custom' ? '' : 'pointer-events-none'}">
+                                <img id="back-preview-${index}" class="w-24 h-32 object-cover bg-gray-200 dark:bg-gray-600 rounded border border-gray-300 dark:border-gray-500" src="${backSrc}" alt="Back of card ${index + 1}">
+                            </label>
+                            <button class="delete-image-btn ${backHasImage ? '' : 'hidden'} absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 transform translate-x-1/2 -translate-y-1/2 hover:bg-red-700" data-index="${index}" data-type="back">
+                               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            </button>
+                        </div>
+                        <select class="back-type-select text-sm select-input rounded-md w-full border" data-index="${index}">
+                            <option value="custom" ${cardData.backType === 'custom' ? 'selected' : ''}>Custom</option>
+                            <option value="encounter" ${cardData.backType === 'encounter' ? 'selected' : ''}>Encounter</option>
+                            <option value="player" ${cardData.backType === 'player' ? 'selected' : ''}>Player</option>
+                            <option value="villain" ${cardData.backType === 'villain' ? 'selected' : ''}>Villain</option>
+                        </select>
+                        <input type="file" id="back-upload-${index}" data-index="${index}" data-type="back" accept="image/*" class="hidden">
+                    </div>
+                </div>
+            `;
+            return slot;
+        }
+
+        function generatePrintAndPreviewPages() {
+            printArea.innerHTML = '';
+            previewArea.innerHTML = '';
+            const numPages = Math.ceil(cards.length / 9);
+
+            for (let p = 0; p < numPages; p++) {
+                const frontPage = createPageElement(p, 'front');
+                const backPage = createPageElement(p, 'back');
+
+                printArea.appendChild(frontPage);
+                printArea.appendChild(backPage);
+
+                const previewContainer = document.createElement('div');
+                previewContainer.className = 'preview-container';
+                previewContainer.innerHTML = `<h2 class="page-title font-marvel text-red-600">Page ${p + 1} Preview</h2>`;
+                const frontPreview = frontPage.cloneNode(true);
+                frontPreview.classList.add('preview-page');
+                const backPreview = backPage.cloneNode(true);
+                backPreview.classList.add('preview-page');
+                previewContainer.appendChild(frontPreview);
+                previewContainer.appendChild(backPreview);
+                previewArea.appendChild(previewContainer);
+            }
+        }
+
+        function createPageElement(pageIndex, type) {
+            const page = document.createElement('div');
+            page.className = 'page';
+            for (let i = 0; i < 9; i++) {
+                const cardIndex = pageIndex * 9 + i;
+                const cardDiv = document.createElement('div');
+                cardDiv.className = 'card';
+                if (cardIndex < cards.length) {
+                    const cardData = cards[cardIndex];
+                    let imageUrl = null;
+                    if (type === 'front') {
+                        imageUrl = cardData.front;
+                    } else { // back
+                        if (cardData.backType === 'custom') {
+                            imageUrl = cardData.back;
+                        } else {
+                            imageUrl = PRESET_BACKS[cardData.backType];
+                        }
+                    }
+                    if(imageUrl) {
+                        cardDiv.style.backgroundImage = `url(${imageUrl})`;
+                    }
+                }
+                page.appendChild(cardDiv);
+            }
+
+            if (type === 'back') {
+                const cardElements = Array.from(page.children);
+                page.innerHTML = ''; // Clear and re-append in mirrored order
+                const mirroredElements = [];
+                for (let row = 0; row < 3; row++) {
+                    for (let col = 2; col >= 0; col--) {
+                        mirroredElements.push(cardElements[row * 3 + col]);
+                    }
+                }
+                mirroredElements.forEach(el => page.appendChild(el));
+            }
+            return page;
+        }
+
+        // --- Event Handlers ---
+
+        function handleAddPage() {
+            for (let i = 0; i < 9; i++) {
+                cards.push({ front: null, back: null, backType: 'custom' });
+            }
+            renderAll();
+        }
+
+        function handleDeletePage(pageIndex) {
+            const startIndex = pageIndex * 9;
+            cards.splice(startIndex, 9);
+            renderAll();
+        }
+
+        function handleFileUpload(event) {
+            const index = parseInt(event.target.dataset.index);
+            const type = event.target.dataset.type;
+            const file = event.target.files[0];
+
+            if (file) {
+                const imageUrl = URL.createObjectURL(file);
+                cards[index][type] = imageUrl;
+                if (type === 'back') {
+                    cards[index].backType = 'custom';
+                }
+                renderAll();
+            }
+        }
+
+        function handleBackTypeChange(index, newType) {
+            cards[index].backType = newType;
+            if (newType !== 'custom') {
+                if (cards[index].back) {
+                    URL.revokeObjectURL(cards[index].back);
+                    cards[index].back = null; 
+                }
+            }
+            renderAll();
+        }
+
+        function handleDeleteImage(index, type) {
+            if (cards[index][type] && cards[index][type].startsWith('blob:')) {
+                URL.revokeObjectURL(cards[index][type]);
+            }
+            cards[index][type] = null;
+            if (type === 'back') {
+                cards[index].backType = 'custom';
+            }
+            renderAll();
+        }
+
+        function handleBulkUpload(event) {
+            const files = event.target.files;
+            if (!files.length) return;
+
+            const type = event.target.dataset.type;
+            const sortedFiles = Array.from(files).sort((a, b) => a.name.localeCompare(b.name));
+
+            const requiredSlots = sortedFiles.length;
+            const currentSlots = cards.length;
+            if (requiredSlots > currentSlots) {
+                const diff = requiredSlots - currentSlots;
+                for (let i = 0; i < diff; i++) {
+                    cards.push({ front: null, back: null, backType: 'custom' });
+                }
+            }
+
+            sortedFiles.forEach((file, index) => {
+                const imageUrl = URL.createObjectURL(file);
+                if (cards[index]) {
+                    cards[index][type] = imageUrl;
+                    if(type === 'back') {
+                        cards[index].backType = 'custom';
+                    }
+                }
+            });
+
+            renderAll();
+            event.target.value = '';
+        }
+
+        function handleSetAllBacks() {
+            const newType = setAllBacksSelect.value;
+            if (newType === 'custom') {
+                bulkBackInput.click();
+            } else {
+                cards.forEach(card => {
+                    card.backType = newType;
+                    if (card.back) {
+                       URL.revokeObjectURL(card.back);
+                       card.back = null;
+                    }
+                });
+                renderAll();
+            }
+        }
+
+        function handlePrint() {
+            const printStyle = document.createElement('style');
+            printStyle.id = 'temp-print-style';
+            printStyle.innerHTML = `
+                @media print {
+                    body > .no-print { display: none; }
+                    #print-area { display: block; }
+                    .card { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+                }
+            `;
+            document.head.appendChild(printStyle);
+            window.print();
+            setTimeout(() => {
+                 document.head.removeChild(printStyle);
+            }, 100);
+        }
+
+        function applyTheme(isInitial = false) {
+            let theme = localStorage.getItem('theme');
+            if (isInitial && !theme) {
+                theme = 'light'; 
+                localStorage.setItem('theme', 'light');
+            }
+
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+                themeToggleLightIcon.classList.remove('hidden');
+                themeToggleDarkIcon.classList.add('hidden');
+            } else {
+                document.documentElement.classList.remove('dark');
+                themeToggleDarkIcon.classList.remove('hidden');
+                themeToggleLightIcon.classList.add('hidden');
+            }
+
+            renderAll();
+        }
+
+        // --- Initial Setup & Listeners ---
+
+        addPageBtn.addEventListener('click', handleAddPage);
+        setAllFrontsBtn.addEventListener('click', () => bulkFrontInput.click());
+        bulkFrontInput.addEventListener('change', handleBulkUpload);
+
+        setAllBacksBtn.addEventListener('click', handleSetAllBacks);
+        bulkBackInput.addEventListener('change', handleBulkUpload);
+
+        printBtn.addEventListener('click', handlePrint);
+
+        themeToggleBtn.addEventListener('click', function() {
+            const newTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+            localStorage.setItem('theme', newTheme);
+            applyTheme();
+        });
+
+        instructionsToggle.addEventListener('click', () => {
+            const isCollapsed = instructionsList.classList.contains('max-h-0');
+            if (isCollapsed) {
+                instructionsList.classList.remove('max-h-0');
+                instructionsList.style.maxHeight = instructionsList.scrollHeight + "px";
+                instructionsArrow.classList.add('rotate-180');
+            } else {
+                instructionsList.style.maxHeight = null;
+                instructionsList.classList.add('max-h-0');
+                instructionsArrow.classList.remove('rotate-180');
+            }
+        });
+
+        cardSlotsContainer.addEventListener('change', (event) => {
+            if (event.target.classList.contains('back-type-select')) {
+                handleBackTypeChange(parseInt(event.target.dataset.index), event.target.value);
+            } else if (event.target.type === 'file') {
+                 handleFileUpload(event);
+            }
+        });
+
+        cardSlotsContainer.addEventListener('click', (event) => {
+            const pageDeleteBtn = event.target.closest('.delete-page-btn');
+            if (pageDeleteBtn) {
+                handleDeletePage(parseInt(pageDeleteBtn.dataset.pageIndex));
+                return;
+            }
+            const imageDeleteBtn = event.target.closest('.delete-image-btn');
+            if(imageDeleteBtn) {
+                handleDeleteImage(parseInt(imageDeleteBtn.dataset.index), imageDeleteBtn.dataset.type);
+                return;
+            }
+        });
+
+        // Initialize
+        applyTheme(true);
+
+    </script>
+
+</body>
+</html>
