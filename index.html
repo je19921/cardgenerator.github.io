@@ -17,6 +17,7 @@
             font-family: 'Bangers', cursive;
             letter-spacing: 0.05em;
         }
+
         /* --- EXPLICIT THEME RULES FOR RELIABILITY --- */
         body {
             background-color: #ffffff; /* white */
@@ -32,10 +33,10 @@
         html.dark .instructions-panel {
             background-color: #1f2937; /* gray-800 */
         }
-        .instructions-text, .instructions-title {
-            color: #1f2937; /* gray-800 */
+        .instructions-text {
+            color: #374151; /* gray-700 */
         }
-        html.dark .instructions-text, html.dark .instructions-title {
+        html.dark .instructions-text {
             color: #d1d5db; /* gray-300 */
         }
         .page-container {
@@ -59,13 +60,13 @@
         .select-input {
             background-color: #ffffff;
             border-color: #d1d5db; /* gray-300 */
+            color: #111827;
         }
         html.dark .select-input {
             background-color: #4b5563; /* gray-600 */
-            border-color: #4b5563; /* gray-600 */
+            border-color: #6b7280; /* gray-500 */
             color: #f9fafb;
         }
-
 
         #print-area { display: none; }
         .card {
@@ -77,7 +78,6 @@
             background-repeat: no-repeat;
             border: 1px dashed #9ca3af;
         }
-        /* --- US LETTER SIZE ADJUSTMENT --- */
         .page {
             width: 8.5in;
             height: 11in;
@@ -123,12 +123,16 @@
         }
 
         @media print {
-            body > .no-print { display: none; }
-            #print-area { display: block; }
+            body > .no-print { display: none !important; }
+            #print-area { display: block !important; }
             .page {
                 margin: 0;
                 box-shadow: none;
                 border: none;
+            }
+            .card {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
         }
     </style>
@@ -149,7 +153,7 @@
 
     <div class="instructions-panel p-6 rounded-lg shadow-md mb-8">
         <div id="instructions-toggle" class="flex justify-between items-center cursor-pointer">
-            <h2 class="instructions-title font-marvel text-3xl text-red-600">Instructions</h2>
+            <h2 class="font-marvel text-3xl text-red-600">Instructions</h2>
             <svg id="instructions-arrow" class="w-6 h-6 transition-transform duration-300 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
         </div>
         <div id="instructions-list" class="overflow-hidden max-h-0 transition-all duration-500 ease-in-out">
@@ -210,9 +214,9 @@
     let cards = [];
 
     const PRESET_BACKS = {
-        encounter: 'https://i.imgur.com/SG2Pro4.jpeg',
-        player: 'https://i.imgur.com/5ZpxwkC.jpeg',
-        villain: 'https://i.imgur.com/aP3H9iK.jpeg'
+        encounter: 'https://i.postimg.cc/NfA5r1B9/Encounter-Back.jpg',
+        player: 'https://i.postimg.cc/PqYgXg2g/Hero-Back.jpg',
+        villain: 'https://i.postimg.cc/T3tW1nFk/Villain-Back.jpg'
     };
 
     // --- Core UI Rendering ---
@@ -490,15 +494,27 @@
         printStyle.id = 'temp-print-style';
         printStyle.innerHTML = `
                 @media print {
-                    body > .no-print { display: none; }
-                    #print-area { display: block; }
-                    .card { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+                    body > .no-print { display: none !important; }
+                    #print-area { display: block !important; }
+                    .page {
+                        margin: 0;
+                        box-shadow: none;
+                        border: none;
+                        page-break-after: always;
+                    }
+                    .card {
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
                 }
             `;
         document.head.appendChild(printStyle);
         window.print();
         setTimeout(() => {
-            document.head.removeChild(printStyle);
+            const tempStyle = document.getElementById('temp-print-style');
+            if (tempStyle) {
+                tempStyle.remove();
+            }
         }, 100);
     }
 
@@ -580,4 +596,5 @@
 
 </body>
 </html>
+
 
