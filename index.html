@@ -11,7 +11,6 @@
     <style id="main-styles">
         body {
             font-family: 'Inter', sans-serif;
-            transition: background-color 0.3s, color 0.3s;
         }
         .font-marvel {
             font-family: 'Bangers', cursive;
@@ -69,27 +68,29 @@
         }
 
         #print-area { display: none; }
+
+        /* --- UPDATED CARD AND PAGE LAYOUT FOR BETTER PRINTING --- */
         .card {
-            width: 2.5in;
-            height: 3.5in;
+            width: 2.45in;
+            height: 3.45in;
             box-sizing: border-box;
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            border: 1px dashed #9ca3af;
+            border: none; /* Remove dashed border for final print */
         }
         .page {
             width: 8.5in;
             height: 11in;
-            padding: 0.25in 0.5in; /* Correct padding for US Letter (8.5x11) */
+            padding: 0.275in; /* Adjusted padding for US Letter */
             box-sizing: border-box;
-            background: white !important; /* Ensure print page is always white */
+            background: white !important;
             display: grid;
-            grid-template-columns: repeat(3, 2.5in);
-            grid-template-rows: repeat(3, 3.5in);
-            justify-content: center;
-            align-content: center;
-            gap: 0;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            justify-items: center;
+            align-items: center;
+            gap: 0.1in; /* Added gap for easier cutting */
             page-break-after: always;
         }
         #page-previews {
@@ -106,7 +107,10 @@
             gap: 2rem;
             margin-bottom: 5rem;
         }
-        .preview-page { box-shadow: 0 0 15px rgba(0,0,0,0.2); }
+        .preview-page {
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            border: 1px solid #ccc; /* Add border to preview pages */
+        }
         .page-title {
             position: absolute;
             top: -4rem;
@@ -500,7 +504,6 @@
                         margin: 0;
                         box-shadow: none;
                         border: none;
-                        page-break-after: always;
                     }
                     .card {
                         -webkit-print-color-adjust: exact !important;
@@ -596,5 +599,6 @@
 
 </body>
 </html>
+
 
 
